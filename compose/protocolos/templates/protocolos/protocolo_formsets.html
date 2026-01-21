@@ -17,7 +17,7 @@
         <div class="d-flex align-items-center">
           <div class="me-3"><i class="bi bi-clipboard2-pulse fs-3"></i></div>
           <div>
-            <div class="small text-uppercase">Formulario CICUAL – Solicitud de Protocolo</div>
+            <div class="small text-uppercase">Formulario CICUA – Solicitud de Protocolo</div>
             <div class="cicual-title">Editar protocolo #{{ obj.id }}</div>
           </div>
         </div>
@@ -28,7 +28,7 @@
           <div class="alert alert-danger">{{ form.non_field_errors }}</div>
         {% endif %}
 
-        <form method="post" novalidate>
+        <form method="post" action="{% url 'protocolos:edit_save' obj.id %}" novalidate>
           {% csrf_token %}
 
           <div class="accordion" id="acCicual">

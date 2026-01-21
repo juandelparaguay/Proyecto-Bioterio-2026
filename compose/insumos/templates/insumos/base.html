@@ -84,12 +84,16 @@
           {% if request.user.is_authenticated %}
             {% if request.user.is_superuser or request.user|has_group:"Administrador" %}
               <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#"
-                   id="configDropdown" role="button"
-                   data-bs-toggle="dropdown" aria-expanded="false">
+                <button class="nav-link dropdown-toggle"
+                        id="configDropdown"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                        type="button">
                   Configuración
-                </a>
-                <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="configDropdown">
+                </button>
+
+                <ul class="dropdown-menu dropdown-menu-dark"
+                    aria-labelledby="configDropdown">
                   <li>
                     <a class="dropdown-item" href="{% url 'protocolos:config' %}">
                       Protocolos (instituciones / procedimientos)

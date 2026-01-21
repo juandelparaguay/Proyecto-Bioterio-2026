@@ -3,6 +3,8 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, get_object_or_404, render
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.http import require_http_methods
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, View, TemplateView, UpdateView
 from django.db import transaction
@@ -15,6 +17,10 @@ from .forms import (
     ProtocoloInvestigadorFormSet,
     ProtocoloAnimalFormSet,
 )
+
+# ================== CONSTANTES ==================
+PROTOCOLO_DETAIL_URL = "protocolos:detail"
+PROTOCOLO_LIST_URL = "protocolos:list"
 
 
 # ================== UTILIDAD ==================
@@ -62,7 +68,7 @@ class ProtocoloCreateView(LoginRequiredMixin, CreateView):
     model = Protocolo
     form_class = ProtocoloForm
     template_name = "protocolos/protocolo_form.html"
-    success_url = reverse_lazy("protocolos:list")
+    success_url = reverse_lazy(PROTOCOLO_LIST_URL)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -143,46 +149,77 @@ class ProtocoloCreateView(LoginRequiredMixin, CreateView):
         return self.render_to_response(ctx)
 
 
-# ================== EDICIÓN ==================
+# ================== EDICIÓN (GET) ==================
 @login_required
+@require_http_methods(["GET"])
 def protocolo_edit(request, pk):
     """
-    Edición con formsets (investigadores, procedimientos, analgésicos).
+    GET: renderiza el formulario de edición (solo lectura).
     """
     protocolo = get_object_or_404(Protocolo, pk=pk)
+
     if protocolo.estado in ("enviado", "aprobado"):
         messages.error(
             request,
             "No se puede editar un protocolo enviado o aprobado. "
             "Debe ser rechazado para poder modificarlo."
         )
-        return redirect("protocolos:detail", pk=pk)
+        return redirect(PROTOCOLO_DETAIL_URL, pk=protocolo.pk)
 
     if not (_es_admin(request.user) or protocolo.creado_por_id == request.user.id):
         messages.error(request, "No tiene permisos para editar este protocolo.")
-        return redirect("protocolos:list")
+        return redirect(PROTOCOLO_LIST_URL)
 
-    if request.method == "POST":
-        form = ProtocoloForm(request.POST, instance=protocolo)
-        fs_invest = ProtocoloInvestigadorFormSet(
-            request.POST, instance=protocolo, prefix="invest"
+    form = ProtocoloForm(instance=protocolo)
+    fs_invest = ProtocoloInvestigadorFormSet(instance=protocolo, prefix="invest")
+    fs_proc = ProcedimientoFormSet(instance=protocolo, prefix="proc")
+    fs_anlg = AnalgesicoFormSet(instance=protocolo, prefix="anlg")
+    fs_anim = ProtocoloAnimalFormSet(instance=protocolo, prefix="anim")
+
+    return render(
+        request,
+        "protocolos/protocolo_formsets.html",
+        {
+            "form": form,
+            "fs_invest": fs_invest,
+            "fs_proc": fs_proc,
+            "fs_anlg": fs_anlg,
+            "fs_anim": fs_anim,
+            "obj": protocolo,
+        },
+    )
+
+
+# ================== EDICIÓN (POST) ==================
+@login_required
+@csrf_protect
+@require_http_methods(["POST"])
+def protocolo_edit_save(request, pk):
+    """
+    POST: valida y guarda cambios del protocolo (operación no segura).
+    """
+    protocolo = get_object_or_404(Protocolo, pk=pk)
+
+    if protocolo.estado in ("enviado", "aprobado"):
+        messages.error(
+            request,
+            "No se puede editar un protocolo enviado o aprobado. "
+            "Debe ser rechazado para poder modificarlo."
         )
-        fs_proc = ProcedimientoFormSet(request.POST, instance=protocolo)
-        fs_anlg = AnalgesicoFormSet(request.POST, instance=protocolo, prefix="anlg")
-        fs_anim = ProtocoloAnimalFormSet(
-            request.POST, instance=protocolo, prefix="anim"
-        )
-        
-       
-        if all(
-            [
-                form.is_valid(),
-                fs_invest.is_valid(),
-                fs_proc.is_valid(),
-                fs_anlg.is_valid(),
-                fs_anim.is_valid(),
-            ]
-        ):
+        return redirect(PROTOCOLO_DETAIL_URL, pk=protocolo.pk)
+
+    if not (_es_admin(request.user) or protocolo.creado_por_id == request.user.id):
+        messages.error(request, "No tiene permisos para editar este protocolo.")
+        return redirect(PROTOCOLO_LIST_URL)
+
+    form = ProtocoloForm(request.POST, instance=protocolo)
+    fs_invest = ProtocoloInvestigadorFormSet(request.POST, instance=protocolo, prefix="invest")
+    fs_proc = ProcedimientoFormSet(request.POST, instance=protocolo, prefix="proc")
+    fs_anlg = AnalgesicoFormSet(request.POST, instance=protocolo, prefix="anlg")
+    fs_anim = ProtocoloAnimalFormSet(request.POST, instance=protocolo, prefix="anim")
+
+    if form.is_valid() and fs_invest.is_valid() and fs_proc.is_valid() and fs_anlg.is_valid() and fs_anim.is_valid():
+        try:
             with transaction.atomic():
                 obj = form.save()
                 fs_invest.save()
@@ -190,18 +227,11 @@ def protocolo_edit(request, pk):
                 fs_anlg.save()
                 fs_anim.save()
             messages.success(request, "Protocolo actualizado correctamente.")
-            return redirect("protocolos:detail", pk=obj.pk)
-    else:
-        form = ProtocoloForm(instance=protocolo)
-        fs_invest = ProtocoloInvestigadorFormSet(
-            instance=protocolo, prefix="invest"
-        )
-        fs_proc = ProcedimientoFormSet(instance=protocolo)
-        fs_anlg = AnalgesicoFormSet(instance=protocolo, prefix="anlg")
-        fs_anim = ProtocoloAnimalFormSet(
-            instance=protocolo, prefix="anim"
-        )
+            return redirect(PROTOCOLO_DETAIL_URL, pk=obj.pk)
+        except Exception:
+            messages.error(request, "Ocurrió un error al guardar. Intente nuevamente.")
 
+    # Si hay errores, re-render del mismo template con errores
     return render(
         request,
         "protocolos/protocolo_formsets.html",
@@ -229,7 +259,7 @@ class ProtocoloEnviarView(LoginRequiredMixin, View):
             obj.estado = "enviado"
             obj.save(update_fields=["estado"])
             messages.success(request, "Protocolo enviado a evaluación.")
-        return redirect("protocolos:detail", pk=pk)
+        return redirect(PROTOCOLO_DETAIL_URL, pk=pk)
 
 
 # ================== CAMBIO DE ESTADO ==================
@@ -253,7 +283,7 @@ class ProtocoloCambiarEstadoView(LoginRequiredMixin, UserPassesTestMixin, View):
             obs = request.POST.get("observacion_rechazo", "").strip()
             if not obs:
                 messages.error(request, "Debe indicar un motivo para rechazar el protocolo.")
-                return redirect("protocolos:detail", pk=pk)
+                return redirect(PROTOCOLO_DETAIL_URL, pk=pk)
            
             obj.estado = "rechazado"
             obj.observacion_rechazo = obs
@@ -263,7 +293,7 @@ class ProtocoloCambiarEstadoView(LoginRequiredMixin, UserPassesTestMixin, View):
         else:
             messages.error(request, "Acción no válida.")
 
-        return redirect("protocolos:detail", pk=pk)
+        return redirect(PROTOCOLO_DETAIL_URL, pk=pk)
 
 # ================== CONFIGURA ITEMS DE PROTOCOLO ==================
 class ConfiguracionProtocolosView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):

@@ -1,8 +1,7 @@
 """
 Crea/actualiza los grupos de roles después de aplicar migraciones.
 - Administrador: todos los permisos de insumos y animales.
-- Investigados: ver todo + agregar/cambiar "movimientos".
-- Lector: solo ver.
+- Investigados/Operador: ver todo + agregar/cambiar "movimientos".
 """
 from django import forms
 from django.contrib.auth import password_validation

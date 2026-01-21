@@ -21,6 +21,7 @@
   </div>
 
   <!-- KPIs ARRIBA (PROTOCOLOS, STOCKS) -->
+  {% if es_admin %}
   <div class="row g-3 mb-4">
     <div class="col-md-3">
       <div class="card shadow-sm">
@@ -28,10 +29,11 @@
           <h6 class="text-muted">Protocolos totales</h6>
           <h3>{{ total_protocolos }}</h3>
           <small>Borradores: {{ total_proto_borrador }}</small><br>
-          <small>Enviados: {{ total_proto_enviados }}</small>
+          <small>Enviados: {{ total_proto_enviados }}</small> 
         </div>
       </div>
     </div>
+    {% endif %}
     <div class="col-md-3">
       <div class="card shadow-sm">
         <div class="card-body">
@@ -116,6 +118,7 @@
   </div>
 
   <!-- ÚLTIMOS MOVIMIENTOS -->
+  {% if es_admin %}
   <div class="row g-3 mb-4">
     <div class="col-md-6">
       <div class="card shadow-sm">
@@ -183,8 +186,10 @@
       </div>
     </div>
   </div>
+  {% endif %}
 
   <!-- SECCIÓN REPORTES -->
+  {% if es_admin %}
   <div class="row g-3 mb-4">
     <div class="col-12">
       <h3 class="mb-3">Reportes</h3>
@@ -221,17 +226,8 @@
       </div>
     </div>
 
-    <div class="col-md-3">
-      <div class="card shadow-sm h-100">
-        <div class="card-body">
-          <h5 class="card-title">Consumo por jaula / especie</h5>
-          <p class="card-text">Cruza consumo de insumos con jaulas y tipos de animales.</p>
-          <a href="{% url 'principal:reporte_consumos' %}" class="btn btn-sm btn-primary">Ver reporte</a>
-        </div>
-      </div>
-    </div>
   </div>
-
+  {% endif %}
 </div>
 
 {% endblock %}

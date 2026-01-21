@@ -1,11 +1,37 @@
+# VCS
+.git
+.gitignore
+
+# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.Python
-.venv
+*.egg-info/
+dist/
+build/
+
+# Entornos
 venv/
-.git
-.gitignore
-*.db
-*.sqlite3
+.env
+.env.*
+*.env
+
+# Django
+staticfiles/
+media/
+*.log
+db.sqlite3
+
+# IDEs
+.vscode/
+.idea/
+
+# Tests / docs
+*.pdf
+*.docx
+*.xlsx
+
+# Docker
+docker-compose*.yml
+

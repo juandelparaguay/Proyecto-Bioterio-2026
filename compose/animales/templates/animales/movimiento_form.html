@@ -21,16 +21,16 @@
 
       <div class="row g-3">
         <div class="col-md-4">
-          <label class="form-label">Categoría</label>
+          {{ form.categoria.label_tag }}
           {{ form.categoria }}
         </div>
         <div class="col-md-4">
-          <label class="form-label">Motivo</label>
+          {{ form.motivo.label_tag }}
           {{ form.motivo }}
         </div>
       
         <div class="col-md-4" id="field-jaula-destino">
-          <label class="form-label">Jaula destino</label>
+          {{ form.jaula_destino.label_tag }}
           {{ form.jaula_destino }}
           <div class="form-text">
             Solo para movimientos de <strong>Traslado</strong>.
@@ -42,16 +42,16 @@
 
       <div class="row g-3 mt-2">
         <div class="col-md-3">
-          <label class="form-label">Cantidad machos</label>
+          {{ form.cantidad_machos.label_tag }}
           {{ form.cantidad_machos }}
         </div>
         <div class="col-md-3">
-          <label class="form-label">Cantidad hembras</label>
+          {{ form.cantidad_hembras.label_tag }}
           {{ form.cantidad_hembras }}
         </div>
 
         <div class="col-md-3" id="field-protocolo">
-          <label class="form-label">Protocolo</label>
+          {{ form.protocolo.label_tag }}
           {{ form.protocolo }}
           <div class="form-text">
             Requerido solo si el motivo es <strong>Protocolo</strong>.
@@ -62,7 +62,7 @@
       </div>
 
       <div class="mt-3">
-        <label class="form-label">Observación</label>
+        {{ form.observacion.label_tag }}
         {{ form.observacion }}
       </div>
 
