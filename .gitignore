@@ -1,0 +1,51 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Virtual Environments
+venv/
+.venv/
+ENV/
+env/
+
+# Environment variables and secrets
+.env
+.env.*
+*.env
+local_settings.py
+
+# Django specific
+db.sqlite3
+db.sqlite3-journal
+staticfiles/
+media/
+*.log
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Documentation and binary files (aligned with your .dockerignore)
+*.pdf
+*.docx
+*.xlsx
+
+# Docker
+docker-compose.override.yml
+
+# New Relic
+newrelic.log

@@ -195,17 +195,28 @@ class BaseProcedimientoFormSet(BaseInlineFormSet):
 
         # Fallback: cantidad de ProcedimientoBase en BD
         return ProcedimientoBase.objects.count()
-
-PROC_BASE_COUNT = ProcedimientoBase.objects.count()
+# no existe datos en procedimientobase.
+# PROC_BASE_COUNT = ProcedimientoBase.objects.count()
 
 ProcedimientoFormSet = inlineformset_factory(
     Protocolo,
     Procedimiento,
     form=ProcedimientoForm,
     formset=BaseProcedimientoFormSet,
-    extra=PROC_BASE_COUNT,          # el número real lo da BaseProcedimientoFormSet.get_extra()
+    # Cambia PROC_BASE_COUNT por 0 o un número fijo
+    # Tu BaseProcedimientoFormSet ya se encarga de calcular el real después
+    extra=0,          
     can_delete=True,
 )
+
+# ProcedimientoFormSet = inlineformset_factory(
+#     Protocolo,
+#     Procedimiento,
+#     form=ProcedimientoForm,
+#     formset=BaseProcedimientoFormSet,
+#     extra=PROC_BASE_COUNT,          # el número real lo da BaseProcedimientoFormSet.get_extra()
+#     can_delete=True,
+# )
 
 # (C) Analgésicos / Anestésicos / Tranquilizantes (punto 9)
 class AnalgesicoForm(forms.ModelForm):
